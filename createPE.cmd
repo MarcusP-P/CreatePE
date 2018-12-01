@@ -1,7 +1,7 @@
 @echo off
 
-:: PEBuilder v2.1.1
-:: Designed for use with the Windows 8 Assessment and Deployment Kit, i
+:: PEBuilder v2.1.2
+:: Designed for use with the Windows 8 Assessment and Deployment Kit,
 :: but may work with earlier versions.
 :: The ADK can be found at 
 :: http://www.microsoft.com/en-us/download/details.aspx?id=30652
@@ -51,6 +51,8 @@
 :: * Allow the user to create a USB disk isntead of an ISO
 :: 2.1.1
 :: * Mcafee have removed the SDAT from the FTP site. Use the xdat file.
+:: 2.1.2
+:: * Fix ISO creation
 ::
 :: Future work:
 :: Create a script on the PE image that will update the DAT files
@@ -74,10 +76,12 @@ goto end
 
 :amd64host
 set progdir=%ProgramFiles(x86)%
+echo Generating on a 64 bit host
 goto endHostSpecific
 
 :x86host
 set progdir=%ProgramFiles%
+echo Generating on a 32 bit host
 goto endHostSpecific
 
 :endHostSpecific
@@ -120,6 +124,7 @@ goto endOptions
 :nousb
 set usb=no
 set buildType=/iso
+goto endOptions
 
 :usage
 
