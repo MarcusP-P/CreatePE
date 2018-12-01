@@ -1,25 +1,34 @@
 @echo off
 
-REM PEBuilder v1.0
-REM Designed for use with the Windows 8 Assessment and Deployment Kit, but may work
-REM with earlier versions.
-REM The ADK can be found at http://www.microsoft.com/en-us/download/details.aspx?id=30652
-REM
-REM It assumes Symantec Ghost Solution Suite is installed in the default directory.
-REM It also assumes that the commandline Virus Scan is unzipped in the desktop
-REM If you have a licence, Command line virus scan can be downloaded from 
-REM http://www.mcafeeasap.com/downloads/CLS/vscl-w32-6.0.1-l.zip
-REM It will install the latest Mcafee SuperDat.
-REM
-REM Virus scan may say "mcscan32.dll has failed its integrity check" if you aren't
-REM connected to the network. Start scan with the /NC switch.
-REM for mroe info: https://kc.mcafee.com/corporate/index?page=content&id=kb68314
-REM 
-REM
-REM Future work:
-REM Create a script on the PE image that will update the DAT files
-REM Add optional components
-REM Investicate WiFi
+:: PEBuilder v1.0.1
+:: Designed for use with the Windows 8 Assessment and Deployment Kit, but may work
+:: with earlier versions.
+:: The ADK can be found at http://www.microsoft.com/en-us/download/details.aspx?id=30652
+::
+:: It assumes Symantec Ghost Solution Suite is installed in the default directory.
+:: It also assumes that the commandline Virus Scan is unzipped in the desktop
+:: If you have a licence, Command line virus scan can be downloaded from 
+:: http://www.mcafeeasap.com/downloads/CLS/vscl-w32-6.0.1-l.zip
+:: It will install the latest Mcafee SuperDat.
+::
+:: Virus scan may say "mcscan32.dll has failed its integrity check" if you aren't
+:: connected to the network. Start scan with the /NC switch.
+:: for mroe info: https://kc.mcafee.com/corporate/index?page=content&id=kb68314
+::
+:: To run this script, Click Start, and type deployment. Right-click Deployment 
+:: and Imaging Tools Environment and then select Run as administrator. Then run 
+:: this script in that command window.
+::
+:: Release History:
+:: 1.0
+:: * Initial Release
+:: 1.0.1
+:: * Improved instructions
+::
+:: Future work:
+:: Create a script on the PE image that will update the DAT files
+:: Add optional components
+:: Investigate WiFi
 
 set pedir=c:\winpe
 set mountdir=%pedir%\mount
