@@ -1,6 +1,8 @@
 @echo off
 
-:: PEBuilder v4.0
+:: PEBuilder v4.0.1
+:: (C) Copyright Marcus Pallinger 2013-2018
+::
 :: Designed for use with Windows 10 1803 or later
 :: To be used with the latest Windows Assessment and Deployment Kit,
 :: but may work with earlier versions.
@@ -8,7 +10,8 @@
 :: http://www.microsoft.com/en-us/download/details.aspx?id=30652
 ::
 :: It assumes the Symantec Ghost Solution Suite files are in the "GSS" folder
-:: The following files should be in that folder, but they aren't actually checked:
+:: The following files should be in that folder, but they aren't actually 
+:: checked:
 :: gdisk32.exe
 :: ghGonfig32.exe
 :: DeployAnywhere32.exe/ghDplyAW32.exe
@@ -22,8 +25,8 @@
 :: NOTE: Some 32 bit files don't include the 32 at the end of the filename. It
 :: needs to be added manually
 ::
-:: If you want to use Windows Defender Offline, you will need to match the bitness of 
-:: the version of Windows to scan.
+:: If you want to use Windows Defender Offline, you will need to match the 
+:: bitness of the version of Windows to scan.
 ::
 :: You will need a Drivers direcory on the desktop, even if it is empty.
 :: Copy an drivers into this directory.
@@ -75,6 +78,9 @@
 :: * Add Windows Defender Offline scanning
 :: * Remove Mcafee Virus Scan
 :: * Speed up of unmount if we havn't unmounted at the end of the previous run
+:: 4.0.1 
+:: * Wrap comments to 80 characters, where possible
+:: * Add Copyright
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
@@ -118,7 +124,8 @@ if "%1"=="amd64" goto amd64image
 goto usage
 
 :: Windows Defender Offline URLs are different for the 32 and 64 bit version.
-:: the image URLS are from hhttps://www.verboon.info/2012/01/how-the-windows-defender-offline-beta-tool-works/
+:: the image URLS are from 
+:: https://www.verboon.info/2012/01/how-the-windows-defender-offline-beta-tool-works/
 :: the definition URLs are from https://www.microsoft.com/en-us/wdsi/definitions
 
 :amd64image
