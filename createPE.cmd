@@ -53,34 +53,36 @@
 :: To get usage information, run without paramaters
 ::
 :: Release History:
-:: 1.0
+:: 1.0   (22/02/2013)
 :: * Initial Release
-:: 1.0.1
+:: 1.0.1 (22/02/2013)
 :: * Improved instructions
-:: 2.0
+:: 2.0   (07/11/2013)
 :: * Allow creation of an image on an x64 system
 :: * Allow the cration of 32 or 64 bit image
 :: * Change to the current directory once we finish
-:: 2.1
+:: 2.1   (08/11/2013)
 :: * Allow the user to create a USB disk isntead of an ISO
-:: 2.1.1
+:: 2.1.1 (08/11/2013)
 :: * Mcafee have removed the SDAT from the FTP site. Use the xdat file.
-:: 2.1.2
+:: 2.1.2 (26/11/2013)
 :: * Fix ISO creation
-:: 3.0
+:: 3.0   (09/10/2015)
 :: * Ghost files now need to be in a GSS directory on the desktop. This allows
 ::   us to easily use the new 12.0.x versions from Symantec Support
 :: * Install user supplied drivers
-:: 3.0.1
+:: 3.0.1 (09/10/2015)
 :: * Allow for spaces in home directory and PE directory
 :: * Add descriptions of what we are doing
-:: 4.0
+:: 4.0   (06/11/2018)
 :: * Add Windows Defender Offline scanning
 :: * Remove Mcafee Virus Scan
 :: * Speed up of unmount if we havn't unmounted at the end of the previous run
-:: 4.0.1 
+:: 4.0.1 (08/11/2018
 :: * Wrap comments to 80 characters, where possible
 :: * Add Copyright
+:: 4.0.2 (08/11/2018)
+:: * Add release dates to changelog
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
