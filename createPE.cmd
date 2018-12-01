@@ -1,7 +1,8 @@
 @echo off
 
-:: PEBuilder v3.0.1
-:: Designed for use with the Windows 8 Assessment and Deployment Kit,
+:: PEBuilder v4.0
+:: Designed for use with Windows 10 1803 or later
+:: To be used with the latest Windows Assessment and Deployment Kit,
 :: but may work with earlier versions.
 :: The ADK can be found at 
 :: http://www.microsoft.com/en-us/download/details.aspx?id=30652
@@ -20,19 +21,12 @@
 :: ghostexp64.exe
 :: NOTE: Some 32 bit files don't include the 32 at the end of the filename. It
 :: needs to be added manually
-:: 
-:: It also assumes that the commandline Virus Scan is unzipped
-:: in the desktop. If you have a licence, Command line virus scan can be 
-:: downloaded from 
-:: http://www.mcafeeasap.com/downloads/CLS/vscl-w32-6.0.1-l.zip
-:: It will install the latest Mcafee SuperDat.
+::
+:: If you want to use Windows Defender Offline, you will need to match the bitness of 
+:: the version of Windows to scan.
 ::
 :: You will need a Drivers direcory on the desktop, even if it is empty.
 :: Copy an drivers into this directory.
-::
-:: Virus scan may say "mcscan32.dll has failed its integrity check" if you 
-:: aren't connected to the network. Start scan with the /NC switch.
-:: for mroe info: https://kc.mcafee.com/corporate/index?page=content&id=kb68314
 ::
 :: To run this script, Click Start, and type deployment. Right-click Deployment 
 :: and Imaging Tools Environment and then select Run as administrator. Then run 
@@ -77,15 +71,19 @@
 :: 3.0.1
 :: * Allow for spaces in home directory and PE directory
 :: * Add descriptions of what we are doing
+:: 4.0
+:: * Add Windows Defender Offline scanning
+:: * Remove Mcafee Virus Scan
+:: * Speed up of unmount if we havn't unmounted at the end of the previous run
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
-:: Create a script on the PE image that will update the DAT files
+:: Create a script on the PE image that will update the defender data files
 :: Add optional components
 :: Investigate WiFi
 :: Allow for building of a UEFI 64 bit version
 :: Investigate WoW64 on the PE image
-:: Check for Ghost and Mcafee directories, and abort if they aren't there
+:: Check for Ghost directory, and abort if they aren't there
 :: Make the script more modular
 
 :: Remmeber the current directory
@@ -119,16 +117,28 @@ if "%1"=="amd64" goto amd64image
 
 goto usage
 
+:: Windows Defender Offline URLs are different for the 32 and 64 bit version.
+:: the image URLS are from hhttps://www.verboon.info/2012/01/how-the-windows-defender-offline-beta-tool-works/
+:: the definition URLs are from https://www.microsoft.com/en-us/wdsi/definitions
+
 :amd64image
 set bits=64
-set mcafee=no
 set archFlag=amd64
+:: Windows Defender Offline Image and definitions
+set wdoimageurl=http://go.microsoft.com/fwlink/?LinkId=232569
+set wdodefinitionurl="https://go.microsoft.com/fwlink/?LinkID=121721&arch=x64"
+set wdoDefinitionFile=mpam-feX64.exe
+
 goto endDestArchitecture
 
 :x86image
 set bits=32
-set mcafee=yes
 set archFlag=x86
+:: Windows Defender Offline Image and definitions
+set wdoimageurl=http://go.microsoft.com/fwlink/?LinkId=232568
+set wdodefinitionurl="https://go.microsoft.com/fwlink/?LinkID=121721&arch=x86"
+set wdoDefinitionFile=mpam-fe.exe
+
 goto endDestArchitecture
 
 :endDestArchitecture
@@ -169,19 +179,32 @@ set pedir=c:\winpe
 set mountdir=%pedir%\mount
 set windowsdir=%mountdir%\Windows
 set ghostdir=%homedrive%%homepath%\Desktop\gss
-set viruscan=%homedrive%%homepath%\Desktop\vscl-w32-6.0.1-l
 set drivers=%homedrive%%homepath%\Desktop\drivers
-set mytemp=%tmp%\mypedats
+set mytemp=%tmp%\createPE
+
+:: architecture independent WDO config
+set wdoImageFile=ImagePackage.exe
+set wdoExtractDir=%mytemp%\wdoExtract
+set wdoMountDir=%pedir%\wdo
+
 
 if "%usb%"=="no" set iso=%pedir%\WinPE%bits%.iso
 if "%usb%"=="yes" set iso=%drive%
 
 echo Force an unmount before we begin
-dism /unmount-image /mountdir:"%mountdir%" /commit
+dism /unmount-image /mountdir:"%mountdir%" /discard
+
+echo Force unmount of Windows Defender Online image 
+dism /unmount-image /mountdir:"%wdoMountDir%" /discard
 
 echo Remove old PE directory
 rd /s /q "%pedir%"
 
+echo Remove old temp directory
+rd /s /q "%mytemp%"
+
+echo creating temp directory
+mkdir "%mytemp%"
 echo Copying PE files
 call copype.cmd %archflag% "%pedir%"
 
@@ -196,62 +219,41 @@ echo Installing Drivers
 for %%d IN ("%drivers%"\*.inf) do dism /Add-Driver /Image:"%mountdir%" /Driver:"%%d"
 dism /Get-Drivers /Image:"%mountdir%"
 
+::
 echo Copying Ghost
 copy "%ghostdir%\*%bits%.exe" "%windowsdir%"
 
-if NOT "%mcafee%"=="yes" goto endMcafee
-echo Copying Mcafee
-copy "%viruscan%"\*.exe "%windowsdir%"
-copy "%viruscan%"\*.dat "%windowsdir%"
-copy "%viruscan%"\*.dll "%windowsdir%"
 
-echo Removing old temp directory
-rd /s /q "%mytemp%"
+:: Get the WDO Image
+echo Getting Windows Defener Online image
+curl -L -o "%mytemp%\%wdoImageFile%" "%wdoimageurl%"
 
-echo Making new temp directory
-mkdir "%mytemp%"
-cd "%mytemp%"
+echo Extracting Windows Defener Online Image
+"%mytemp%\%wdoImageFile%" /x:"%wdoExtractDir%" /q
 
-del /q getlist.scr
+echo Mounting Windows Defender Online image
+mkdir "%wdoMountDir%"
 
-> getlist.scr ECHO ftp
->>getlist.scr ECHO @
->>getlist.scr ECHO cd commonupdater2
->>getlist.scr ECHO cd current
->>getlist.scr ECHO cd vscandat1000
->>getlist.scr ECHO cd dat
->>getlist.scr ECHO cd 0000
->>getdat.scr ECHO hash
->>getlist.scr ECHO get avvdat.ini
->>getlist.scr ECHO quit
+dism /mount-image /ReadOnly /imagefile:"%wdoExtractDir%\sources\boot.wim" /index:1 /mountdir:"%wdoMountDir%"
 
-ftp -s:getlist.scr ftp.mcafee.com
+echo Copying Windows Defender Online files
+xcopy /S /E /I "%wdoMountDir%\Program Files\Microsoft Security Client" "%mountDir%\Program Files\Microsoft Security Client"
 
-for /f "usebackq delims== tokens=1,2" %%m in (`find /i "DATVersion" avvdat.ini`) do set currentdat=%%n
+echo Unmounting Windows Defender Online image
+dism /unmount-image /mountdir:"%wdoMountDir%" /discard
 
-set superdat=%currentdat%xdat.exe
+echo Removing Windows Defender Online mountpoint
+rd /s /q "%wdoMountDir%"
 
-del getdat.scr
+echo Downloading latest definitions
+curl -L -o "%mountDir%\%wdoDefinitionFile%" %wdodefinitionurl%
 
-> getdat.scr ECHO ftp
->>getdat.scr ECHO @
->>getdat.scr ECHO bin
->>getdat.scr ECHO cd virusdefs
->>getdat.scr ECHO cd 4.x
->>getdat.scr ECHO hash
->>getdat.scr ECHO get %superdat%
->>getdat.scr ECHO quit
-
-ftp -s:getdat.scr ftp.mcafee.com
-
-start /wait %superdat% /engineall /silent /e .
-pause
-
-copy *.dll "%windowsdir%"
-copy *.dat "%windowsdir%"
-
-:endMcafee
-
+(
+	echo @echo off
+	echo "X:\Program Files\Microsoft Security Client\OfflineScannerShell"
+) > "%windowsdir%"\defender.bat
+	
+:: Finalise
 echo Unmounting image
 dism /unmount-image /mountdir:"%mountdir%" /commit
 
