@@ -1,17 +1,34 @@
 @echo off
 
-:: PEBuilder v2.1.2
+:: PEBuilder v3.0
 :: Designed for use with the Windows 8 Assessment and Deployment Kit,
 :: but may work with earlier versions.
 :: The ADK can be found at 
 :: http://www.microsoft.com/en-us/download/details.aspx?id=30652
 ::
-:: It assumes Symantec Ghost Solution Suite is installed in the default 
-:: directory. It also assumes that the commandline Virus Scan is unzipped
+:: It assumes the Symantec Ghost Solution Suite files are in the "GSS" folder
+:: The following files should be in that folder, but they aren't actually checked:
+:: gdisk32.exe
+:: ghGonfig32.exe
+:: DeployAnywhere32.exe/ghDplyAW32.exe
+:: ghost32.exe
+:: ghostexp32.exe
+:: gdisk64.exe
+:: ghGonfig64.exe
+:: DeployAnywhere64.exe/ghDplyAW64.exe
+:: ghost64.exe
+:: ghostexp64.exe
+:: NOTE: Some 32 bit files don't include the 32 at the end of the filename. It
+:: needs to be added manually
+:: 
+:: It also assumes that the commandline Virus Scan is unzipped
 :: in the desktop. If you have a licence, Command line virus scan can be 
 :: downloaded from 
 :: http://www.mcafeeasap.com/downloads/CLS/vscl-w32-6.0.1-l.zip
 :: It will install the latest Mcafee SuperDat.
+::
+:: You will need a Drivers direcory on the desktop, even if it is empty.
+:: Copy an drivers into this directory.
 ::
 :: Virus scan may say "mcscan32.dll has failed its integrity check" if you 
 :: aren't connected to the network. Start scan with the /NC switch.
@@ -53,8 +70,13 @@
 :: * Mcafee have removed the SDAT from the FTP site. Use the xdat file.
 :: 2.1.2
 :: * Fix ISO creation
+:: 3.0
+:: * Ghost files now need to be in a GSS directory on the desktop. This allows
+::   us to easily use the new 12.0.x versions from Symantec Support
+:: * Install user supplied drivers
 ::
 :: Future work:
+:: Check for existance of Drivers directory before trying to install them
 :: Create a script on the PE image that will update the DAT files
 :: Add optional components
 :: Investigate WiFi
@@ -143,8 +165,9 @@ goto end
 set pedir=c:\winpe
 set mountdir=%pedir%\mount
 set windowsdir=%mountdir%\Windows
-set ghostdir="%progdir%\Symantec\Ghost"
+set ghostdir=%homedrive%%homepath%\Desktop\gss
 set viruscan=%homedrive%%homepath%\Desktop\vscl-w32-6.0.1-l
+set drivers=%homedrive%%homepath%\Desktop\drivers
 set mytemp=%tmp%\mypedats
 
 if "%usb%"=="no" set iso=%pedir%\WinPE%bits%.iso
@@ -157,10 +180,11 @@ dism /mount-image /imagefile:%pedir%\media\sources\boot.wim /index:1 /mountdir:%
 
 dism /image:%mountdir% /set-scratchspace:128
 
+:: Install drivers
+for %%d IN (%drivers%\*.inf) do dism /Add-Driver /Image:"%mountdir%" /Driver:%%d
+dism /Get-Drivers /Image:"%mountdir%
+
 copy %ghostdir%\*%bits%.exe %windowsdir%
-if not "%bits%"=="32" goto endGhostArchSpecific
-copy %ghostdir%\ghostexp.exe %windowsdir%
-:endGhostArchSpecific
 
 if NOT "%mcafee%"=="yes" goto endMcafee
 copy %viruscan%\*.exe %windowsdir%
