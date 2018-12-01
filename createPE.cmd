@@ -1,6 +1,6 @@
 @echo off
 
-:: PEBuilder v3.0
+:: PEBuilder v3.0.1
 :: Designed for use with the Windows 8 Assessment and Deployment Kit,
 :: but may work with earlier versions.
 :: The ADK can be found at 
@@ -74,6 +74,9 @@
 :: * Ghost files now need to be in a GSS directory on the desktop. This allows
 ::   us to easily use the new 12.0.x versions from Symantec Support
 :: * Install user supplied drivers
+:: 3.0.1
+:: * Allow for spaces in home directory and PE directory
+:: * Add descriptions of what we are doing
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
@@ -173,27 +176,41 @@ set mytemp=%tmp%\mypedats
 if "%usb%"=="no" set iso=%pedir%\WinPE%bits%.iso
 if "%usb%"=="yes" set iso=%drive%
 
-rd /s /q %pedir%
+echo Force an unmount before we begin
+dism /unmount-image /mountdir:"%mountdir%" /commit
 
-call copype.cmd %archflag% %pedir%
-dism /mount-image /imagefile:%pedir%\media\sources\boot.wim /index:1 /mountdir:%mountdir%
+echo Remove old PE directory
+rd /s /q "%pedir%"
 
-dism /image:%mountdir% /set-scratchspace:128
+echo Copying PE files
+call copype.cmd %archflag% "%pedir%"
+
+echo Mounting image
+dism /mount-image /imagefile:"%pedir%\media\sources\boot.wim" /index:1 /mountdir:"%mountdir%"
+
+echo setting Scratch Space
+dism /image:"%mountdir%" /set-scratchspace:128
 
 :: Install drivers
-for %%d IN (%drivers%\*.inf) do dism /Add-Driver /Image:"%mountdir%" /Driver:%%d
-dism /Get-Drivers /Image:"%mountdir%
+echo Installing Drivers
+for %%d IN ("%drivers%"\*.inf) do dism /Add-Driver /Image:"%mountdir%" /Driver:"%%d"
+dism /Get-Drivers /Image:"%mountdir%"
 
-copy %ghostdir%\*%bits%.exe %windowsdir%
+echo Copying Ghost
+copy "%ghostdir%\*%bits%.exe" "%windowsdir%"
 
 if NOT "%mcafee%"=="yes" goto endMcafee
-copy %viruscan%\*.exe %windowsdir%
-copy %viruscan%\*.dat %windowsdir%
-copy %viruscan%\*.dll %windowsdir%
+echo Copying Mcafee
+copy "%viruscan%"\*.exe "%windowsdir%"
+copy "%viruscan%"\*.dat "%windowsdir%"
+copy "%viruscan%"\*.dll "%windowsdir%"
 
-rd /s /q %mytemp%
-mkdir %mytemp%
-cd %mytemp%
+echo Removing old temp directory
+rd /s /q "%mytemp%"
+
+echo Making new temp directory
+mkdir "%mytemp%"
+cd "%mytemp%"
 
 del /q getlist.scr
 
@@ -204,6 +221,7 @@ del /q getlist.scr
 >>getlist.scr ECHO cd vscandat1000
 >>getlist.scr ECHO cd dat
 >>getlist.scr ECHO cd 0000
+>>getdat.scr ECHO hash
 >>getlist.scr ECHO get avvdat.ini
 >>getlist.scr ECHO quit
 
@@ -211,7 +229,6 @@ ftp -s:getlist.scr ftp.mcafee.com
 
 for /f "usebackq delims== tokens=1,2" %%m in (`find /i "DATVersion" avvdat.ini`) do set currentdat=%%n
 
-::set superdat=sdat%currentdat%.exe
 set superdat=%currentdat%xdat.exe
 
 del getdat.scr
@@ -221,23 +238,27 @@ del getdat.scr
 >>getdat.scr ECHO bin
 >>getdat.scr ECHO cd virusdefs
 >>getdat.scr ECHO cd 4.x
+>>getdat.scr ECHO hash
 >>getdat.scr ECHO get %superdat%
 >>getdat.scr ECHO quit
 
 ftp -s:getdat.scr ftp.mcafee.com
 
-:: start /wait %superdat% /engineall /silent
 start /wait %superdat% /engineall /silent /e .
 pause
 
-copy *.dll %windowsdir%
-copy *.dat %windowsdir%
+copy *.dll "%windowsdir%"
+copy *.dat "%windowsdir%"
 
 :endMcafee
 
-dism /unmount-image /mountdir:%mountdir% /commit
+echo Unmounting image
+dism /unmount-image /mountdir:"%mountdir%" /commit
 
-call makewinpemedia %buildType% %pedir% %iso%
-if "%usb%"=="no" copy %iso% %InitialLocation%
+echo Making media
+call makewinpemedia %buildType% "%pedir%" "%iso%"
+if Not "%usb%"=="no" goto end
+echo Copying ISO
+copy "%iso%" "%InitialLocation%"
 :end
-cd %InitialLocation%
+cd "%InitialLocation%"
