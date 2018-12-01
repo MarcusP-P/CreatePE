@@ -1,6 +1,6 @@
 @echo off
 
-:: PEBuilder v2.1
+:: PEBuilder v2.1.1
 :: Designed for use with the Windows 8 Assessment and Deployment Kit, i
 :: but may work with earlier versions.
 :: The ADK can be found at 
@@ -49,6 +49,8 @@
 :: * Change to the current directory once we finish
 :: 2.1
 :: * Allow the user to create a USB disk isntead of an ISO
+:: 2.1.1
+:: * Mcafee have removed the SDAT from the FTP site. Use the xdat file.
 ::
 :: Future work:
 :: Create a script on the PE image that will update the DAT files
@@ -180,7 +182,8 @@ ftp -s:getlist.scr ftp.mcafee.com
 
 for /f "usebackq delims== tokens=1,2" %%m in (`find /i "DATVersion" avvdat.ini`) do set currentdat=%%n
 
-set superdat=sdat%currentdat%.exe
+::set superdat=sdat%currentdat%.exe
+set superdat=%currentdat%xdat.exe
 
 del getdat.scr
 
@@ -194,7 +197,9 @@ del getdat.scr
 
 ftp -s:getdat.scr ftp.mcafee.com
 
-start /wait %superdat% /engineall /silent
+:: start /wait %superdat% /engineall /silent
+start /wait %superdat% /engineall /silent /e .
+pause
 
 copy *.dll %windowsdir%
 copy *.dat %windowsdir%
