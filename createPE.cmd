@@ -1,7 +1,7 @@
 @echo off
 
 :: PEBuilder v4.0.3
-:: (C) Copyright Marcus Pallinger 2013-2018
+:: (C) Copyright Marcus Pallinger 2013-2020
 ::
 :: Designed for use with Windows 10 1803 or later
 :: To be used with the latest Windows Assessment and Deployment Kit (and 
