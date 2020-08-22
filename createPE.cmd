@@ -1,13 +1,20 @@
 @echo off
 
-:: PEBuilder v4.0.1
+:: PEBuilder v4.0.3
 :: (C) Copyright Marcus Pallinger 2013-2018
 ::
 :: Designed for use with Windows 10 1803 or later
-:: To be used with the latest Windows Assessment and Deployment Kit,
-:: but may work with earlier versions.
-:: The ADK can be found at 
-:: http://www.microsoft.com/en-us/download/details.aspx?id=30652
+:: To be used with the latest Windows Assessment and Deployment Kit (and 
+:: Windows PE add-on), but may work with earlier versions.
+:: ADK versions 1809 and later have split Windows PE into a seperate
+:: add on.
+:: The Windows 10 2004 ADK can be found at 
+:: https://go.microsoft.com/fwlink/?linkid=2120254
+:: And the Windows PE add-on can be found at:
+:: https://go.microsoft.com/fwlink/?linkid=2120253
+::
+:: All versions of the ADK can be found at
+:: https://docs.microsoft.com/en-us/windows-hardware/get-started/adk-install
 ::
 :: It assumes the Symantec Ghost Solution Suite files are in the "GSS" folder
 :: The following files should be in that folder, but they aren't actually 
@@ -37,7 +44,7 @@
 ::
 :: If you want to create a USB drive, prepare it according to the instructions
 :: at:
-:: http://technet.microsoft.com/en-us/library/hh825045.aspx
+:: https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/winpe--use-a-single-usb-key-for-winpe-and-a-wim-file---wim
 :: Windows may not allow you to create two partitions on a USB drive. If the 
 :: above instructions fail, try the following:
 :: diskpart
@@ -83,6 +90,8 @@
 :: * Add Copyright
 :: 4.0.2 (08/11/2018)
 :: * Add release dates to changelog
+:: 4.0.3 
+:: * Update ADK section of the notes
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
