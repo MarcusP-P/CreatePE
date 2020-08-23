@@ -270,6 +270,8 @@ curl -L -o "%mountDir%\%wdoDefinitionFile%" %wdodefinitionurl%
 	echo @echo off
 	echo "X:\Program Files\Microsoft Security Client\OfflineScannerShell"
 ) > "%windowsdir%"\defender.bat
+
+echo @echo To run Windows Defender Offline, run defender.bat >> "%windowsdir%"\system32\startnet.cmd
 	
 :: Finalise
 echo Unmounting image
