@@ -92,6 +92,7 @@
 :: * Add release dates to changelog
 :: 4.0.3 
 :: * Update ADK section of the notes
+:: * Display commands to run defender
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
