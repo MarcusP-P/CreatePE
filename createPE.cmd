@@ -1,6 +1,6 @@
 @echo off
 
-:: PEBuilder v4.0.3
+:: PEBuilder v5.0
 :: (C) Copyright Marcus Pallinger 2013-2020
 ::
 :: Designed for use with Windows 10 1803 or later
@@ -35,8 +35,9 @@
 :: If you want to use Windows Defender Offline, you will need to match the 
 :: bitness of the version of Windows to scan.
 ::
-:: You will need a Drivers direcory on the desktop, even if it is empty.
-:: Copy an drivers into this directory.
+:: You will need a Drivers direcory in a subdirectory of the directory where 
+:: you start this batch filem even if it is empty.
+:: Copy any drivers into this directory.
 ::
 :: To run this script, Click Start, and type deployment. Right-click Deployment 
 :: and Imaging Tools Environment and then select Run as administrator. Then run 
@@ -96,6 +97,8 @@
 :: * Change energy usage to High Performance
 :: * Change command line parsing to a loop to allow for more paramaters
 :: * Allow for building without Windows Defender Online
+:: * gss and drivers folders are now searched relative to the starting directory
+::    These folders no longer need to be on the desktop
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
@@ -246,8 +249,8 @@ goto end
 set pedir=c:\winpe
 set mountdir=%pedir%\mount
 set windowsdir=%mountdir%\Windows
-set ghostdir=%homedrive%%homepath%\Desktop\gss
-set drivers=%homedrive%%homepath%\Desktop\drivers
+set ghostdir=%InitialLocation%\gss
+set drivers=%InitialLocation%\drivers
 set mytemp=%tmp%\createPE
 
 :: architecture independent WDO config
