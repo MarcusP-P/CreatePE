@@ -90,9 +90,12 @@
 :: * Add Copyright
 :: 4.0.2 (08/11/2018)
 :: * Add release dates to changelog
-:: 4.0.3 
+:: 5.0 
 :: * Update ADK section of the notes
 :: * Display commands to run defender
+:: * Change energy usage to High Performance
+:: * Change command line parsing to a loop to allow for more paramaters
+:: * Allow for building without Windows Defender Online
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
@@ -106,6 +109,14 @@
 
 :: Remmeber the current directory
 set InitialLocation=%CD%
+
+:: ***Initialise these variables that can be overwritten when comandline parsing
+:: By default we create an image with defender
+set CreateDefender=yes
+
+:: Unless we get the USB options, we 
+set usb=no
+set buildType=/iso
 
 :: Symantec Ghost installs as an x86 application. We need to find the right 
 :: Program Files directory
@@ -162,34 +173,72 @@ goto endDestArchitecture
 
 :endDestArchitecture
 
-set usb=no
+:: Remove the architecture option from the commandline options
+shift
+:commandlineLoop
+if "%~1"=="" GOTO endCommandlineLoop
+if "%1"=="/usb" goto usb
 
-if "%2"=="" goto nousb
-if not "%2"=="/usb" goto usage
+if "%1"=="/nodefender" goto nodefenderopt
 
-if "%3"=="" goto usage
+goto usage
 
+:usb
+shift
+:: Validate the drive paramater - This is not robust
+
+SETLOCAL
+set scratch=%~1
+
+:: It can't be empty
+if "%~1"=="" GOTO usage
+
+:: The second character must be a :
+if NOT "%scratch:~1,1%"==":" GOTO usage
+
+:: The filter out a few invalid characters for the forst character
+if "%scratch:~0,1%"=="/" GOTO usage
+if "%scratch:~0,1%"=="-" GOTO usage
+if "%scratch:~0,1%"==":" GOTO usage
+
+:: There can't be a third character
+if NOT "%scratch:~2,1%"=="" GOTO usage
+
+ENDLOCAL
+echo Createing USB drive on %~1
+
+:: Overwrite the default variables for USB creation
 set usb=yes
-set drive=%3
+set drive=%1
 set buildType=/ufd
 
-goto endOptions
+goto continueLoop
 
-:nousb
-set usb=no
-set buildType=/iso
+:nodefenderopt
+echo Disabling Windows Defender Online
+set CreateDefender=no
+
+goto continueLoop
+
+:: strip the current parmater, and restart the parsing loop
+:continueLoop
+
+shift
+goto commandlineLoop
+
+:endCommandlineLoop
 goto endOptions
 
 :usage
 
 echo Usage:
-echo createPE architecture [/usb drive]
+echo createPE architecture [/usb drive] [/nodefender]
 echo Options:
 echo   architecture: must be either x86 or amd64. It selects for which 
 echo     architecture to build the ISO.
 echo   /usb: Create a USB stick rather than an iso image.
 echo   drive: The drive letter to use when creating a USB disk 
-
+echo   /nodefender: Do not download and include Windows Defender Online
 goto end
 
 :endOptions
@@ -205,7 +254,6 @@ set mytemp=%tmp%\createPE
 set wdoImageFile=ImagePackage.exe
 set wdoExtractDir=%mytemp%\wdoExtract
 set wdoMountDir=%pedir%\wdo
-
 
 if "%usb%"=="no" set iso=%pedir%\WinPE%bits%.iso
 if "%usb%"=="yes" set iso=%drive%
@@ -230,8 +278,10 @@ call copype.cmd %archflag% "%pedir%"
 echo Mounting image
 dism /mount-image /imagefile:"%pedir%\media\sources\boot.wim" /index:1 /mountdir:"%mountdir%"
 
-echo setting Scratch Space
-dism /image:"%mountdir%" /set-scratchspace:128
+echo Setting power mode
+(
+	echo @powercfg /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 
+) >> "%windowsdir%"\system32\startnet.cmd
 
 :: Install drivers
 echo Installing Drivers
@@ -242,8 +292,12 @@ dism /Get-Drivers /Image:"%mountdir%"
 echo Copying Ghost
 copy "%ghostdir%\*%bits%.exe" "%windowsdir%"
 
-
+if NOT "%set CreateDefender"=="yes" goto nodefender
 :: Get the WDO Image
+:: WDO needs some scratch space to unpack the files
+echo setting Scratch Space
+dism /image:"%mountdir%" /set-scratchspace:128
+
 echo Getting Windows Defener Online image
 curl -L -o "%mytemp%\%wdoImageFile%" "%wdoimageurl%"
 
@@ -272,7 +326,11 @@ curl -L -o "%mountDir%\%wdoDefinitionFile%" %wdodefinitionurl%
 	echo "X:\Program Files\Microsoft Security Client\OfflineScannerShell"
 ) > "%windowsdir%"\defender.bat
 
-echo @echo To run Windows Defender Offline, run defender.bat >> "%windowsdir%"\system32\startnet.cmd
+(
+	echo @echo To run Windows Defender Offline, run defender.bat 
+) >> "%windowsdir%"\system32\startnet.cmd
+
+: noDefender
 	
 :: Finalise
 echo Unmounting image
