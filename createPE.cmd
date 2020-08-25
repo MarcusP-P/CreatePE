@@ -91,7 +91,7 @@
 :: * Add Copyright
 :: 4.0.2 (08/11/2018)
 :: * Add release dates to changelog
-:: 5.0 
+:: 5.0 (25/08/2020)
 :: * Update ADK section of the notes
 :: * Display commands to run defender
 :: * Change energy usage to High Performance
