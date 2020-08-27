@@ -1,6 +1,6 @@
 @echo off
 
-:: PEBuilder v5.0
+:: PEBuilder v5.0.1
 :: (C) Copyright Marcus Pallinger 2013-2020
 ::
 :: Designed for use with Windows 10 1803 or later
@@ -19,16 +19,17 @@
 :: It assumes the Symantec Ghost Solution Suite files are in the "GSS" folder
 :: The following files should be in that folder, but they aren't actually 
 :: checked:
-:: gdisk32.exe
-:: ghGonfig32.exe
 :: DeployAnywhere32.exe/ghDplyAW32.exe
-:: ghost32.exe
-:: ghostexp32.exe
-:: gdisk64.exe
-:: ghGonfig64.exe
 :: DeployAnywhere64.exe/ghDplyAW64.exe
+:: gdisk32.exe
+:: gdisk64.exe
+:: ghGonfig32.exe
+:: ghGonfig64.exe
+:: ghost32.exe
 :: ghost64.exe
+:: ghostexp32.exe
 :: ghostexp64.exe
+::
 :: NOTE: Some 32 bit files don't include the 32 at the end of the filename. It
 :: needs to be added manually
 ::
@@ -99,6 +100,8 @@
 :: * Allow for building without Windows Defender Online
 :: * gss and drivers folders are now searched relative to the starting directory
 ::    These folders no longer need to be on the desktop
+:: 5.0.1
+:: * Sort Ghost executables to make it easier to grab the right files
 ::
 :: Future work:
 :: Check for existance of Drivers directory before trying to install them
